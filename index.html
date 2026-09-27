@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Routine">
+<meta name="theme-color" content="#c77dab">
+<title>Daily Routine</title>
+<style>
+:root{
+  --bg:#fbf6fa; --card:#ffffff; --ink:#382f3f; --sub:#9a8ba3;
+  --accent:#c77dab; --accent2:#8f7bc7; --line:#f0e3ee; --track:#f3e9f4;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#221d26; --card:#2c2530; --ink:#f0e6ee; --sub:#b3a3bd;
+    --accent:#e0a0c8; --accent2:#b3a0ea; --line:#3c3342; --track:#382f40;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#221d26; --card:#2c2530; --ink:#f0e6ee; --sub:#b3a3bd;
+  --accent:#e0a0c8; --accent2:#b3a0ea; --line:#3c3342; --track:#382f40;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{margin:0; height:100%; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+.wrap{max-width:520px; margin:0 auto; padding:20px 16px 60px;}
+h1{font-size:1.3rem; margin:4px 0 0; letter-spacing:.2px;}
+.sub{color:var(--sub); font-size:.85rem; margin:2px 0 18px;}
+.notice{background:var(--track); color:var(--accent2); border-radius:10px; padding:8px 12px; font-size:.8rem; margin-bottom:14px; text-align:center;}
+.quote{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 16px; font-style:italic; font-size:.95rem; margin-bottom:18px;}
+.quote button{float:right; border:none; background:none; color:var(--sub); font-size:.75rem; cursor:pointer; font-style:normal;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:14px;}
+.card h2{font-size:.78rem; text-transform:uppercase; letter-spacing:.6px; color:var(--sub); margin:0 0 10px;}
+.item{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:.95rem;}
+.item:last-child{border-bottom:none;}
+.item input{width:19px; height:19px; accent-color:var(--accent2); flex-shrink:0;}
+.item label{flex:1; cursor:pointer;}
+.item.done label{color:var(--sub); text-decoration:line-through;}
+.water{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.drop{width:30px; height:30px; border-radius:50%; border:2px solid var(--accent2); background:var(--track); cursor:pointer; font-size:.7rem; display:flex; align-items:center; justify-content:center; color:var(--sub);}
+.drop.filled{background:var(--accent2); border-color:var(--accent2); color:#fff;}
+.wlabel{width:100%; font-size:.8rem; color:var(--sub); margin-top:6px;}
+.week{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:18px;}
+.day{text-align:center; padding:8px 2px; border-radius:10px; background:var(--card); border:1px solid var(--line); font-size:.68rem; color:var(--sub);}
+.day.today{background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600;}
+.day.past{opacity:.45;}
+.day .d{font-size:.9rem; display:block; margin-top:2px; color:inherit;}
+.progress{height:6px; background:var(--track); border-radius:4px; overflow:hidden; margin:6px 0 14px;}
+.progress > div{height:100%; background:var(--accent2); transition:width .3s;}
+footer{text-align:center; color:var(--sub); font-size:.72rem; margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="dateLine">Loading…</h1>
+  <div class="sub" id="dayType"></div>
+  <div class="notice" id="startNotice" style="display:none"></div>
+
+  <div class="quote" id="quoteBox">
+    <button onclick="nextQuote()">next ›</button>
+    <span id="quoteText"></span>
+  </div>
+
+  <div class="week" id="weekStrip"></div>
+
+  <div class="progress"><div id="progFill" style="width:0%"></div></div>
+
+  <div class="card" id="exerciseCard">
+    <h2>Movement</h2>
+    <div id="exerciseItem"></div>
+  </div>
+
+  <div class="card">
+    <h2>Yoga & Skincare</h2>
+    <div class="item"><input type="checkbox" id="yoga"><label for="yoga">Yoga session</label></div>
+    <div class="item"><input type="checkbox" id="skinAM"><label for="skinAM">Skincare — morning</label></div>
+    <div class="item"><input type="checkbox" id="skinPM"><label for="skinPM">Skincare — night</label></div>
+  </div>
+
+  <div class="card">
+    <h2>Food</h2>
+    <div class="item"><input type="checkbox" id="breakfast"><label for="breakfast">Breakfast</label></div>
+    <div class="item"><input type="checkbox" id="snack1"><label for="snack1">Snack 1</label></div>
+    <div class="item"><input type="checkbox" id="lunch"><label for="lunch">Lunch</label></div>
+    <div class="item"><input type="checkbox" id="snack2"><label for="snack2">Snack 2</label></div>
+    <div class="item"><input type="checkbox" id="dinner"><label for="dinner">Dinner</label></div>
+  </div>
+
+  <div class="card">
+    <h2>Water — 3L goal</h2>
+    <div class="water" id="waterRow"></div>
+    <div class="wlabel" id="waterLabel"></div>
+  </div>
+
+  <div class="card">
+    <h2>Study & Growth</h2>
+    <div class="item"><input type="checkbox" id="college"><label for="college">College</label></div>
+    <div class="item"><input type="checkbox" id="tuition"><label for="tuition">Tuition</label></div>
+    <div class="item"><input type="checkbox" id="skill"><label for="skill">Learn a skill — 1 hr</label></div>
+  </div>
+
+  <div class="card">
+    <h2>Wind down</h2>
+    <div class="item"><input type="checkbox" id="sleep"><label for="sleep">Asleep by 9:30 PM</label></div>
+  </div>
+
+  <footer>Saved on this device · resets fresh each day</footer>
+</div>
+
+<script>
+const QUOTES = [
+  "Small steps daily beat big leaps rarely.",
+  "You don't have to be fast, you just have to start.",
+  "Discipline is choosing what you want most over what you want now.",
+  "One good habit repeated is worth more than ten perfect days.",
+  "Progress hides inside boring, consistent days.",
+  "Show up for yourself the way you'd show up for someone you love.",
+  "The version of you that you're building needs today's effort.",
+  "Rest is part of the plan, not a break from it.",
+  "Every glass of water, every rep, every page — it all adds up.",
+  "You're not behind. You're exactly on your own timeline."
+];
+
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const START = new Date(2026,8,28); // Sep 28 2026, the plan's first Monday
+const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const effective = today < START ? START : today;
+const dow = effective.getDay(); // 0=Sun..6=Sat
+const dateKey = effective.toISOString().slice(0,10);
+
+document.getElementById('dateLine').textContent =
+  effective.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+
+if (today < START){
+  const notice = document.getElementById('startNotice');
+  notice.style.display = 'block';
+  notice.textContent = "Plan starts Monday, Sep 28 — showing Day 1";
+}
+
+let exerciseLabel, exerciseTag;
+if (dow===1||dow===3||dow===5){ exerciseLabel="Run / Walk — 2 km"; exerciseTag="Run day"; }
+else if (dow===2||dow===4){ exerciseLabel="Cycling"; exerciseTag="Cycle day"; }
+else { exerciseLabel="Rest, stretch, or light movement"; exerciseTag="Rest day"; }
+
+document.getElementById('dayType').textContent = exerciseTag;
+document.getElementById('exerciseItem').innerHTML =
+  `<div class="item"><input type="checkbox" id="exercise"><label for="exercise">${exerciseLabel}</label></div>`;
+
+// week strip — always Monday first, built from the effective date's week
+const jsDow = effective.getDay(); // 0=Sun
+const mondayOffset = (jsDow+6)%7;
+const startMon = new Date(effective); startMon.setDate(effective.getDate()-mondayOffset);
+const stripEl = document.getElementById('weekStrip');
+for(let i=0;i<7;i++){
+  const d = new Date(startMon); d.setDate(startMon.getDate()+i);
+  const isToday = d.toDateString()===effective.toDateString();
+  const isPast = d < effective && !isToday;
+  const el = document.createElement('div');
+  el.className = 'day'+(isToday?' today':'')+(isPast?' past':'');
+  el.innerHTML = `${DAYS[i]}<span class="d">${d.getDate()}</span>`;
+  stripEl.appendChild(el);
+}
+
+// quote
+let qIdx = Math.floor(Math.random()*QUOTES.length);
+function showQuote(){ document.getElementById('quoteText').textContent = QUOTES[qIdx]; }
+function nextQuote(){ qIdx = (qIdx+1)%QUOTES.length; showQuote(); }
+showQuote();
+
+// checklist persistence, keyed per day so it resets
+const checkIds = ["exercise","yoga","skinAM","skinPM","breakfast","snack1","lunch","snack2","dinner","college","tuition","skill","sleep"];
+const storeKey = "routine_"+dateKey;
+let state = {};
+try{ state = JSON.parse(localStorage.getItem(storeKey) || "{}"); }catch(e){ state = {}; }
+
+function updateProgress(){
+  const total = checkIds.length + 1; // +1 for water goal
+  let done = 0;
+  checkIds.forEach(id=>{ if(document.getElementById(id) && document.getElementById(id).checked) done++; });
+  if((state.water||0) >= 3) done++;
+  document.getElementById('progFill').style.width = Math.round(done/total*100)+"%";
+}
+
+checkIds.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.checked = !!state[id];
+  if(el.checked) el.parentElement.classList.add('done');
+  el.addEventListener('change', ()=>{
+    state[id] = el.checked;
+    el.parentElement.classList.toggle('done', el.checked);
+    save();
+    updateProgress();
+  });
+});
+
+// water: 3 bottles of 1L each = 3L
+const waterRow = document.getElementById('waterRow');
+const BOTTLES = 3;
+state.water = state.water || 0;
+for(let i=0;i<BOTTLES;i++){
+  const d = document.createElement('div');
+  d.className = 'drop';
+  d.textContent = '1L';
+  d.dataset.i = i;
+  d.addEventListener('click', ()=>{
+    state.water = (i < state.water) ? i : i+1;
+    renderWater(); save(); updateProgress();
+  });
+  waterRow.appendChild(d);
+}
+function renderWater(){
+  [...waterRow.children].forEach((d,i)=>{ d.classList.toggle('filled', i < state.water); });
+  document.getElementById('waterLabel').textContent = state.water+" of 3 bottles — tap a bottle when you refill it";
+}
+renderWater();
+
+function save(){
+  try{ localStorage.setItem(storeKey, JSON.stringify(state)); }catch(e){}
+}
+
+updateProgress();
+</script>
+</body>
+</html>
